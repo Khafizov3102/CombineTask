@@ -25,6 +25,10 @@ let numbersSubject = PassthroughSubject<(Double, Double), Never>()
 let subscription = numbersSubject
     .flatMap { lhs, rhs in
         div(lhs: lhs, rhs: rhs)
+            .catch { _ in
+                Just(Double.nan)
+                    .eraseToAnyPublisher()
+            }
     }
     .sink { completion in
         print(completion)

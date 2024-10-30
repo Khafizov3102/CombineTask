@@ -10,8 +10,35 @@
 import Foundation
 import Combine
 
-///Модель для парсинга JSON
+//Модель для парсинга JSON
 struct Post: Decodable {
     let title: String
     let body: String
+}
+
+var cancellable = Set<AnyCancellable>()
+
+func fetchPosts(url: URL) -> AnyPublisher<[Post], Error> {
+    URLSession.shared.dataTaskPublisher(for: url)
+        .map(\.data)
+        .decode(type: [Post].self, decoder: JSONDecoder())
+        .eraseToAnyPublisher()
+}
+
+if let postsURL = URL(string: "https://jsonplaceholder.typicode.com/posts") {
+    
+    fetchPosts(url: postsURL)
+        .sink { completion in
+            switch completion {
+            case .finished:
+                break
+            case .failure(let error):
+                print("Error: \(error.localizedDescription)")
+            }
+        } receiveValue: { posts in
+            posts.forEach {
+                print("Title: \($0.title)")
+            }
+        }
+        .store(in: &cancellable)
 }

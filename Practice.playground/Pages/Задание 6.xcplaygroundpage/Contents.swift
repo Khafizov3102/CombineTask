@@ -30,3 +30,28 @@ enum HTTPError: LocalizedError {
         }
     }
 }
+
+extension URLSession.DataTaskPublisher {
+    func isValidResponse() -> AnyPublisher<Data, HTTPError> {
+        self.tryMap {
+            guard let httpResponse = $0.response as? HTTPURLResponse else {
+                throw HTTPError.nonHTTPRequest
+            }
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                throw HTTPError.requestFailed(httpResponse.statusCode)
+            }
+            
+            return $0.data
+        }
+        .mapError { error in
+            if let httpError = error as? HTTPError {
+                return httpError
+            } else if let urlError = error as? URLError {
+                return .networkError(urlError)
+            } else {
+                return .unknown
+            }
+        }.eraseToAnyPublisher()
+    }
+}

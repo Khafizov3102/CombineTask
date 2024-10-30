@@ -9,3 +9,16 @@
 
 import Combine
 
+
+let subject = PassthroughSubject<Int, Never>()
+let collectionSize = 3
+
+subject
+    .collect(collectionSize)
+    .sink { collection in
+        print(collection)
+    }
+
+(0...10).forEach {
+    subject.send($0)
+}

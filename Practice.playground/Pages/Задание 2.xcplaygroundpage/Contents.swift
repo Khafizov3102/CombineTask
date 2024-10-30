@@ -9,3 +9,13 @@
  */
 
 import Combine
+
+let firstNumer = Just(5)
+let secondNumer = Just(10)
+
+Publishers.CombineLatest(firstNumer, secondNumer)
+    .map { firstNumber, secondNumer in
+        (firstNumber + secondNumer) * 2
+    }
+    .sink { print("Результат: \($0)")}
+
